@@ -21,7 +21,7 @@ var inputs = 0;
 var paused = false;
 var ag = false;
 var codeComp = Math.random();;
-var admin = false;admin2 = false;admin3 = false;highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000);
+var framesSinceLastApple=0,admin = false;admin2 = false;admin3 = false;highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
 function setup() {
     createCanvas(sizeX * multiplier, sizeY * multiplier);
 }
@@ -56,8 +56,8 @@ function draw() {
                     else if (playField[i][j] == 'o') {
 
                         if (rgb) {
-                            stroke(toColor(playFieldAges[i][j] * -10000 - rgbSeed));
-                            fill(toColor(playFieldAges[i][j] * -10000 - rgbSeed));
+                            stroke(toColor(playFieldAges[i][j]*10000 - (rgbSeed-254)));
+                            fill(toColor(playFieldAges[i][j]*10000 - (rgbSeed-254)));
                         }
                         else {
                             stroke('CornFlowerBlue');
@@ -67,6 +67,7 @@ function draw() {
                         stroke('Aqua');
                         fill('Aqua');
                         rect(((i * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((j * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3);
+                        //text(playFieldAges[i][j],i*multiplier,j*multiplier);
                     }
                     if (i == nextPosX && j == nextPosY) {
                         stroke('blue');
@@ -270,6 +271,7 @@ function pickUpApple(code) {
         snakeLength++;
         ag = true;
         genApple(false);
+        framesSinceLastApple=0;
     }
 }
 function move() {
@@ -337,6 +339,10 @@ function antiCheat() {
         resetGame();
         resetScores();
     }
+    if(!cheats&&!analyseAge()){
+        resetGame();
+        resetScores();
+    }
 }
 function countApples(){
     var counter = 0;
@@ -356,8 +362,9 @@ function newHighScore() {
         setCookie('highscore', highscore, 14);
     }
 }
-function game() {
+function game(canDie) {
     frame++;
+    framesSinceLastApple++;
     switch (direction) {
         case 0:
             playField[headX][headY] = '>';
@@ -381,7 +388,7 @@ function game() {
 
         move();
         snakeMagic();
-        if (playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive) {
+        if (playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive&&canDie) {
             die();
         } else if (playField[nextPosX][nextPosY] == 'Q') {
             var buff = Math.random();
@@ -389,6 +396,9 @@ function game() {
             pickUpApple(buff);
             headY = nextPosY;
             headX = nextPosX;
+        }
+        else if(!canDie&&playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive){
+            resetGame();
         }
         else {
             headY = nextPosY;
@@ -406,7 +416,7 @@ function drawScreen() {
     for (var i = 0; i < sizeY; i++) {
         var buffer = "";
         for (var j = 0; j < sizeX; j++) {
-            buffer += " " + playField[j][i];
+            buffer += " " + playFieldAges[j][i];
         }
         console.log(buffer);
     }
@@ -415,8 +425,7 @@ function resetGame() {
 
     playField = new Array(sizeY);
     playFieldAges = new Array(sizeY);
-
-
+    rgbSeed = Math.round(Math.random() * 100000000);
     snakeLength = 3;
     direction = Math.round(Math.random() * 4);
     frame = 0;
@@ -433,12 +442,35 @@ function resetGame() {
     genApple(true);
     console.clear();
     started = true;
-    game();
-    game();
+    game(false);
+    game(false);
     started = false;
     drawScreen();
     clearInterval(intervalID);
     intervalID = setInterval(game, 1000 / fps);
+}
+function analyseAge(){
+    //do fancy algorythm stuff, to check if the age array makes sense
+    var smallestValue = sizeX*sizeY;
+    for (var i = 1; i < sizeY-1; i++) {
+        for (var j = 1; j < sizeX-1; j++) {
+            if(playFieldAges[i][j]!=0&&playFieldAges[i][j]<smallestValue)smallestValue=playFieldAges[i][j];
+        }
+    }
+    for (var i = 1; i < sizeY-1; i++) {
+        for (var j = 1; j < sizeX-1; j++) {
+            var valid = true;
+            if(playFieldAges[i][j]!=0&&started==true&&frame>10){
+                //check for smaller value
+                if((playFieldAges[i][j]>smallestValue)&&(playFieldAges[i-1][j]!=playFieldAges[i][j]-1)&&(playFieldAges[i+1][j]!=playFieldAges[i][j]-1)&&(playFieldAges[i][j-1]!=playFieldAges[i][j]-1)&&(playFieldAges[i][j+1]!=playFieldAges[i][j]-1))valid = false;
+                //check for bigger value
+                if((playFieldAges[i][j]!=snakeLength)&&(playFieldAges[i-1][j]!=playFieldAges[i][j]+1)&&(playFieldAges[i+1][j]!=playFieldAges[i][j]+1)&&(playFieldAges[i][j-1]!=playFieldAges[i][j]+1)&&(playFieldAges[i][j+1]!=playFieldAges[i][j]+1))valid = false;
+                if(!valid&&framesSinceLastApple<snakeLength+1)valid = true;
+            }
+            if(!valid)return false;
+        }
+    }
+    return true;
 }
 initPlayField();
 ag = true;
