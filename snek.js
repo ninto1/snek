@@ -22,7 +22,7 @@ var paused = false;
 var ag = false;
 var canDie = false;
 var codeComp = Math.random();;
-var innersquares = getCookie('innerSquares'); framesSinceLastApple = 0, admin = false; admin2 = false; admin3 = false; highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
+var darkMode = getCookie('darkMode'),innersquares = getCookie('innerSquares'); framesSinceLastApple = 0, admin = false; admin2 = false; admin3 = false; highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
 function setup() {
     createCanvas(sizeX * multiplier, sizeY * multiplier);
 }
@@ -147,12 +147,10 @@ function logKey(e) {
             resetScores();
             break;
         case 'KeyK':
-            setCookie('rgb', false, 14);
-            rgb = false;
+            toggleRGB();
             break;
         case 'KeyL':
-            setCookie('rgb', true, 14);
-            rgb = true;
+            toggleColorMode();
             break;
         case 'KeyG':
             if (paused) {
@@ -495,38 +493,30 @@ function analyseAge() {
     }
     return true;
 }
+function toggleRGB(){
+    rgb = rgb?false:true;
+    setCookie('rgb',rgb,14);
+}
 function toggleColorMode() { 
-    var darkMode = getCookie('darkMode');
-    if(darkMode){
+    darkMode = darkMode?false:true;
+    setCookie('darkMode',darkMode,14);
+    enforceColorMode(darkMode);
+  }
+  function enforceColorMode(cm){
+    if(cm){
         document.getElementById("infos").style.color = 'white';
+        document.getElementById("yes").style.color = 'white';
         document.body.style.background = 'black';
-        darkMode = false;
-        setCookie('darkMode',false,14);
+
     }else{
         document.getElementById("infos").style.color = 'black';
+        document.getElementById("yes").style.color = 'black';
         document.body.style.background = 'white';
-        darkMode = true;
-        setCookie('darkMode',true,14);
     }
-    
   }
 initPlayField();
 ag = true;
 genApple(true);
+enforceColorMode(getCookie('darkMode'));
 
-switch (direction) {
-    case 0:
-        playField[headX][headY] = '>';
-        break;
-    case 1:
-        playField[headX][headY] = 'v';
-        break;
-    case 2:
-        playField[headX][headY] = '<';
-        break;
-    case 3:
-        playField[headX][headY] = '^';
-        break;
-
-}
 resetGame();
