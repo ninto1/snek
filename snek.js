@@ -22,7 +22,7 @@ var paused = false;
 var ag = false;
 var canDie = false;
 var codeComp = Math.random();;
-var framesSinceLastApple=0,admin = false;admin2 = false;admin3 = false;highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
+var innersquares = getCookie('innerSquares'); framesSinceLastApple = 0, admin = false; admin2 = false; admin3 = false; highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
 function setup() {
     createCanvas(sizeX * multiplier, sizeY * multiplier);
 }
@@ -57,17 +57,20 @@ function draw() {
                     else if (playField[i][j] == 'o') {
 
                         if (rgb) {
-                            stroke(toColor(playFieldAges[i][j]*10000 - (rgbSeed-254)));
-                            fill(toColor(playFieldAges[i][j]*10000 - (rgbSeed-254)));
+                            stroke(toColor(playFieldAges[i][j] * 10000 - (rgbSeed - 254)));
+                            fill(toColor(playFieldAges[i][j] * 10000 - (rgbSeed - 254)));
                         }
                         else {
                             stroke('CornFlowerBlue');
                             fill('CornFlowerBlue');
                         }
                         rect(i * multiplier, j * multiplier, multiplier - 1, multiplier - 1);
+                        if(innersquares){
                         stroke('Aqua');
                         fill('Aqua');
                         rect(((i * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((j * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3);
+                        console.log(innersquares);
+                        }
                         //text(playFieldAges[i][j],i*multiplier,j*multiplier);
                     }
                     if (i == nextPosX && j == nextPosY) {
@@ -99,23 +102,37 @@ document.addEventListener('keydown', logKey);
 function logKey(e) {
     switch (e.code) {
         case 'KeyA':
-            inputstack.push(2);
+        case 'ArrowLeft':
+            if (inputstack[inputstack.length - 1] != 2) inputstack.push(2);
             started = true;
             break;
         case 'KeyS':
-            inputstack.push(1);
+        case 'ArrowDown':
+            if (inputstack[inputstack.length - 1] != 1) inputstack.push(1);
             started = true;
             break;
         case 'KeyD':
-            inputstack.push(0);
+        case 'ArrowRight':
+            if (inputstack[inputstack.length - 1] != 0) inputstack.push(0);
             started = true;
             break;
         case 'KeyW':
-            inputstack.push(3);
+        case 'ArrowUp':
+            if (inputstack[inputstack.length - 1] != 3) inputstack.push(3);
             started = true;;
             break;
         case 'KeyX':
             die();;
+            break;
+        case 'KeyR':
+            if(innersquares){
+                setCookie('innerSquares',false,14);
+                innersquares = false;
+            }
+            else if(!innersquares){
+                setCookie('innerSquares',true,14);
+                innersquares = true;
+            }
             break;
         case 'KeyZ':
             resetScores();
@@ -150,7 +167,7 @@ function logKey(e) {
             if (chain == 3) {
                 admin = true;
                 admin2 = false;
-                
+
             }
             break;
         case 'KeyU':
@@ -208,15 +225,15 @@ function setCookie(cname, cvalue, exdays) //function found on the internet. Sour
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
-function a1597(){
-    if(admin&&!admin2){
+function a1597() {
+    if (admin && !admin2) {
         admin3 = true;
         console.clear();
         console.log("#---------------------------#");
         console.log("|Entered Administrator mode!|");
         console.log("#---------------------------#");
     }
-    
+
 }
 function getCookie(cname) //function found on the internet. Source: https://www.w3schools.com/js/js_cookies.asp
 {
@@ -275,7 +292,7 @@ function pickUpApple(code) {
         snakeLength++;
         ag = true;
         genApple(false);
-        framesSinceLastApple=0;
+        framesSinceLastApple = 0;
     }
 }
 function move() {
@@ -327,32 +344,32 @@ function resetScores() {
     highscore = 0;
 }
 function antiCheat() {
-    if (!cheats&&!admin3) {
+    if (!cheats && !admin3) {
         if (highscore != getCookie('highscore') - 1 && highscore != getCookie('highscore') + 1 && highscore != getCookie('highscore')) resetScores();
-        if(!admin||!admin2)admin3 = false;
+        if (!admin || !admin2) admin3 = false;
     }
-    if(admin!=admin2){
+    if (admin != admin2) {
         admin = false;
         admin2 = false;
     }
-    if(((!cheats)&&countApples()>2)){
+    if (((!cheats) && countApples() > 2)) {
         resetGame();
         resetScores();
     }
-    if((!cheats)&&(headX>nextPosX+1||headX<nextPosX-1||headY>nextPosY+1||headY<nextPosY-1)){
+    if ((!cheats) && (headX > nextPosX + 1 || headX < nextPosX - 1 || headY > nextPosY + 1 || headY < nextPosY - 1)) {
         resetGame();
         resetScores();
     }
-    if(!cheats&&!analyseAge()){
+    if (!cheats && !analyseAge()) {
         resetGame();
         resetScores();
     }
 }
-function countApples(){
+function countApples() {
     var counter = 0;
     for (var i = 0; i < sizeY; i++) {
         for (var j = 0; j < sizeX; j++) {
-            if(playField[i][j] == 'Q'){
+            if (playField[i][j] == 'Q') {
                 counter++;
             }
         }
@@ -360,7 +377,7 @@ function countApples(){
     return counter;
 }
 function newHighScore() {
-    if (!cheats||admin3) {
+    if (!cheats || admin3) {
         newHS = true;
         highscore = snakeLength - 3;
         setCookie('highscore', highscore, 14);
@@ -392,7 +409,7 @@ function game() {
 
         move();
         snakeMagic();
-        if (playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive&&canDie) {
+        if (playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive && canDie) {
             die();
         } else if (playField[nextPosX][nextPosY] == 'Q') {
             var buff = Math.random();
@@ -401,7 +418,7 @@ function game() {
             headY = nextPosY;
             headX = nextPosX;
         }
-        else if(!canDie&&playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive){
+        else if (!canDie && playField[nextPosX][nextPosY] != ' ' && playField[nextPosX][nextPosY] != 'Q' && alive) {
             resetGame();
         }
         else {
@@ -455,29 +472,44 @@ function resetGame() {
     canDie = true;
     intervalID = setInterval(game, 1000 / fps);
 }
-function analyseAge(){
+function analyseAge() {
     //do fancy algorythm stuff, to check if the age array makes sense
-    var smallestValue = sizeX*sizeY;
-    for (var i = 1; i < sizeY-1; i++) {
-        for (var j = 1; j < sizeX-1; j++) {
-            if(playFieldAges[i][j]!=0&&playFieldAges[i][j]<smallestValue)smallestValue=playFieldAges[i][j];
+    var smallestValue = sizeX * sizeY;
+    for (var i = 1; i < sizeY - 1; i++) {
+        for (var j = 1; j < sizeX - 1; j++) {
+            if (playFieldAges[i][j] != 0 && playFieldAges[i][j] < smallestValue) smallestValue = playFieldAges[i][j];
         }
     }
-    for (var i = 1; i < sizeY-1; i++) {
-        for (var j = 1; j < sizeX-1; j++) {
+    for (var i = 1; i < sizeY - 1; i++) {
+        for (var j = 1; j < sizeX - 1; j++) {
             var valid = true;
-            if(playFieldAges[i][j]!=0&&started==true&&frame>10){
+            if (playFieldAges[i][j] != 0 && started == true && frame > 10) {
                 //check for smaller value
-                if((playFieldAges[i][j]>smallestValue)&&(playFieldAges[i-1][j]!=playFieldAges[i][j]-1)&&(playFieldAges[i+1][j]!=playFieldAges[i][j]-1)&&(playFieldAges[i][j-1]!=playFieldAges[i][j]-1)&&(playFieldAges[i][j+1]!=playFieldAges[i][j]-1))valid = false;
+                if ((playFieldAges[i][j] > smallestValue) && (playFieldAges[i - 1][j] != playFieldAges[i][j] - 1) && (playFieldAges[i + 1][j] != playFieldAges[i][j] - 1) && (playFieldAges[i][j - 1] != playFieldAges[i][j] - 1) && (playFieldAges[i][j + 1] != playFieldAges[i][j] - 1)) valid = false;
                 //check for bigger value
-                if((playFieldAges[i][j]!=snakeLength)&&(playFieldAges[i-1][j]!=playFieldAges[i][j]+1)&&(playFieldAges[i+1][j]!=playFieldAges[i][j]+1)&&(playFieldAges[i][j-1]!=playFieldAges[i][j]+1)&&(playFieldAges[i][j+1]!=playFieldAges[i][j]+1))valid = false;
-                if(!valid&&framesSinceLastApple<snakeLength+1)valid = true;
+                if ((playFieldAges[i][j] != snakeLength) && (playFieldAges[i - 1][j] != playFieldAges[i][j] + 1) && (playFieldAges[i + 1][j] != playFieldAges[i][j] + 1) && (playFieldAges[i][j - 1] != playFieldAges[i][j] + 1) && (playFieldAges[i][j + 1] != playFieldAges[i][j] + 1)) valid = false;
+                if (!valid && framesSinceLastApple < snakeLength + 1) valid = true;
             }
-            if(!valid)return false;
+            if (!valid) return false;
         }
     }
     return true;
 }
+function toggleColorMode() { 
+    var darkMode = getCookie('darkMode');
+    if(darkMode){
+        document.getElementById("infos").style.color = 'white';
+        document.body.style.background = 'black';
+        darkMode = false;
+        setCookie('darkMode',false,14);
+    }else{
+        document.getElementById("infos").style.color = 'black';
+        document.body.style.background = 'white';
+        darkMode = true;
+        setCookie('darkMode',true,14);
+    }
+    
+  }
 initPlayField();
 ag = true;
 genApple(true);
