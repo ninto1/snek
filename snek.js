@@ -139,7 +139,7 @@ function logKey(e) {
         case 'KeyG':
             if (paused) {
                 paused = false;
-                intervalID = setInterval(game, 1000 / fps);
+                intervalID = setInterval(game(true), 1000 / fps);
             }
             else {
                 paused = true;
@@ -181,7 +181,7 @@ function logKey(e) {
             if (cheats) {
                 fps--;
                 clearInterval(intervalID);
-                intervalID = setInterval(game, 1000 / fps);
+                intervalID = setInterval(game(true), 1000 / fps);
             }
             else console.log("cheats are disabled");
             break;
@@ -189,7 +189,7 @@ function logKey(e) {
             if (cheats) {
                 fps++;
                 clearInterval(intervalID);
-                intervalID = setInterval(game, 1000 / fps);
+                intervalID = setInterval(game(true), 1000 / fps);
             }
             else console.log("cheats are disabled");
             break;
@@ -447,7 +447,7 @@ function resetGame() {
     started = false;
     drawScreen();
     clearInterval(intervalID);
-    intervalID = setInterval(game, 1000 / fps);
+    intervalID = setInterval(game(true), 1000 / fps);
 }
 function analyseAge(){
     //do fancy algorythm stuff, to check if the age array makes sense
