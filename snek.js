@@ -20,6 +20,7 @@ var inputstack = [];
 var inputs = 0;
 var paused = false;
 var ag = false;
+var canDie = false;
 var codeComp = Math.random();;
 var framesSinceLastApple=0,admin = false;admin2 = false;admin3 = false;highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
 function setup() {
@@ -139,7 +140,8 @@ function logKey(e) {
         case 'KeyG':
             if (paused) {
                 paused = false;
-                intervalID = setInterval(game(true), 1000 / fps);
+                canDie = true;
+                intervalID = setInterval(game, 1000 / fps);
             }
             else {
                 paused = true;
@@ -181,7 +183,8 @@ function logKey(e) {
             if (cheats) {
                 fps--;
                 clearInterval(intervalID);
-                intervalID = setInterval(game(true), 1000 / fps);
+                canDie = true;
+                intervalID = setInterval(game, 1000 / fps);
             }
             else console.log("cheats are disabled");
             break;
@@ -189,7 +192,8 @@ function logKey(e) {
             if (cheats) {
                 fps++;
                 clearInterval(intervalID);
-                intervalID = setInterval(game(true), 1000 / fps);
+                canDie = true;
+                intervalID = setInterval(game, 1000 / fps);
             }
             else console.log("cheats are disabled");
             break;
@@ -362,7 +366,7 @@ function newHighScore() {
         setCookie('highscore', highscore, 14);
     }
 }
-function game(canDie) {
+function game() {
     frame++;
     framesSinceLastApple++;
     switch (direction) {
@@ -442,12 +446,14 @@ function resetGame() {
     genApple(true);
     console.clear();
     started = true;
-    game(false);
-    game(false);
+    canDie = false;
+    game();
+    game();
     started = false;
     drawScreen();
     clearInterval(intervalID);
-    intervalID = setInterval(game(true), 1000 / fps);
+    canDie = true;
+    intervalID = setInterval(game, 1000 / fps);
 }
 function analyseAge(){
     //do fancy algorythm stuff, to check if the age array makes sense
