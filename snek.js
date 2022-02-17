@@ -22,7 +22,7 @@ var paused = false;
 var ag = false;
 var canDie = false;
 var codeComp = Math.random();;
-var darkMode = getCookie('darkMode'),innersquares = getCookie('innerSquares'); framesSinceLastApple = 0, admin = false; admin2 = false; admin3 = false; highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
+var darkMode = getCookie('darkMode');innersquares = getCookie('innersquares'); framesSinceLastApple = 0, admin = false; admin2 = false; admin3 = false; highscore = getCookie('highscore'), newHS = false, aCID = setInterval(antiCheat, 100), chain = 0, color = new Array(3), rgb = getCookie('rgb'), rgbSeed = Math.round(Math.random() * 100000000);
 function setup() {
     createCanvas(sizeX * multiplier, sizeY * multiplier);
 }
@@ -35,11 +35,15 @@ function draw() {
                 if (playField[i][j] != ' ' || (i == nextPosX && j == nextPosY)) {
                     if (playField[i][j] == '#') {
                         stroke('black');
+                        
                         if (cheats) {
                             fill('red');
                             textSize(20);
                             text('Cheats activated', sizeX * multiplier - 200, 50);
-
+                        }
+                        else if(darkMode){
+                            stroke('white');
+                            fill('rgb(26, 26, 26)')
                         }
                         else if (!paused) fill('white');
                         else {
@@ -64,12 +68,13 @@ function draw() {
                             stroke('CornFlowerBlue');
                             fill('CornFlowerBlue');
                         }
-                        rect(i * multiplier, j * multiplier, multiplier - 1, multiplier - 1);
-                        if(innersquares){
+                        rect(i * multiplier, j * multiplier, multiplier - 2, multiplier - 2);
+                        var bfu = getCookie('innersquares');
+                        if(bfu==true){
                         stroke('Aqua');
                         fill('Aqua');
-                        rect(((i * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((j * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3);
-                        console.log(innersquares);
+                        if(innersquares)rect(((i * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((j * multiplier) + ((multiplier - (multiplier - 1) / (snakeLength / playFieldAges[i][j])) / 2)) + 1, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3, ((multiplier - 1) / (snakeLength / playFieldAges[i][j])) - 3);
+                        //console.log(innersquares);
                         }
                         //text(playFieldAges[i][j],i*multiplier,j*multiplier);
                     }
@@ -87,6 +92,7 @@ function draw() {
         line(0, 0, sizeX * multiplier, sizeY * multiplier);
         line(0, sizeY * multiplier, sizeX * multiplier, 0);
     }
+    stroke('black');
     fill('red');
     textSize(15);
     //textSize(150);
@@ -125,27 +131,12 @@ function logKey(e) {
             die();;
             break;
         case 'KeyR':
-            if(innersquares){
-                setCookie('innerSquares',false,14);
-                innersquares = false;
-            }
-            else if(!innersquares){
-                setCookie('innerSquares',true,14);
-                innersquares = true;
-            }
+            toggleinnersquares();
             break;
         case 'KeyZ':
-            resetScores();
-            break;
         case 'KeyY':
-            resetScores();
-            break;
         case 'KeyJ':
-            resetScores();
-            break;
         case 'KeyI':
-            resetScores();
-            break;
         case 'KeyK':
             toggleRGB();
             break;
@@ -382,6 +373,14 @@ function newHighScore() {
     }
 }
 function game() {
+    if(frame==10){
+        darkMode=getCookie('darkMode');
+        innersquares = getCookie('innersquares');
+        rgb = getCookie('rgb');
+    }
+    if(frame%5==0){
+    enforceColorMode(darkMode);
+}
     frame++;
     framesSinceLastApple++;
     switch (direction) {
@@ -402,7 +401,7 @@ function game() {
 
     if (started) {
         //drawScreen();
-        console.log("score: " + (snakeLength - 3));
+        //console.log("score: " + (snakeLength - 3));
         playField[headX][headY] = 'o';
 
         move();
@@ -497,16 +496,20 @@ function toggleRGB(){
     rgb = rgb?false:true;
     setCookie('rgb',rgb,14);
 }
+function toggleinnersquares(){
+    innersquares = innersquares?false:true;
+    setCookie('innersquares',innersquares,14);
+}
 function toggleColorMode() { 
     darkMode = darkMode?false:true;
     setCookie('darkMode',darkMode,14);
     enforceColorMode(darkMode);
   }
-  function enforceColorMode(cm){
+function enforceColorMode(cm){
     if(cm){
         document.getElementById("infos").style.color = 'white';
         document.getElementById("yes").style.color = 'white';
-        document.body.style.background = 'black';
+        document.body.style.background = 'rgb(26, 26, 26)';
 
     }else{
         document.getElementById("infos").style.color = 'black';
@@ -517,6 +520,7 @@ function toggleColorMode() {
 initPlayField();
 ag = true;
 genApple(true);
-enforceColorMode(getCookie('darkMode'));
+darkMode = false;
+enforceColorMode(darkMode);
 
 resetGame();
